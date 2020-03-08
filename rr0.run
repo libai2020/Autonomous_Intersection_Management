@@ -1,0 +1,56 @@
+reset;
+model NLP0.mod;
+include IG.INIVAL;
+option solver ipopt;
+
+shell ("del " & ("opti_flag.txt"));
+printf "0">>("opti_flag.txt");
+close ("opti_flag.txt");
+
+solve;
+
+shell ("del " & ("opti_flag.txt"));
+if match (solve_message, "Optimal") > 0 then {
+	printf "1">>("opti_flag.txt");
+} else{
+	printf "0">>("opti_flag.txt");
+}
+close ("opti_flag.txt");
+
+shell ("del " & ("x.txt"));
+shell ("del " & ("y.txt"));
+shell ("del " & ("theta.txt"));
+shell ("del " & ("phy.txt"));
+
+for {i in {1..Nv}} {
+	for {j in {1..Nfe}} {
+		printf "%5.4f;", x[i,j]>>("x.txt");
+		printf "%5.4f;", y[i,j]>>("y.txt");
+		printf "%5.4f;", theta[i,j]>>("theta.txt");
+		printf "%5.4f;", phy[i,j]>>("phy.txt");
+	}
+}
+close ("x.txt");
+close ("y.txt");
+close ("theta.txt");
+close ("phy.txt");
+
+if match (solve_message, "Optimal") > 0 then {
+	shell ("del " & ("IG.INIVAL"));
+	for {k in {1..Nv}} {
+		for {i in {1..Nfe}} {
+			printf "let x[%d,%d]:=%5.3f;\n", k, i, x[k,i]>>("IG.INIVAL");
+			printf "let y[%d,%d]:=%5.3f;\n", k, i, y[k,i]>>("IG.INIVAL");
+			printf "let xr[%d,%d]:=%5.3f;\n", k, i, xr[k,i]>>("IG.INIVAL");
+			printf "let yr[%d,%d]:=%5.3f;\n", k, i, yr[k,i]>>("IG.INIVAL");
+			printf "let xf[%d,%d]:=%5.3f;\n", k, i, xf[k,i]>>("IG.INIVAL");
+			printf "let yf[%d,%d]:=%5.3f;\n", k, i, yf[k,i]>>("IG.INIVAL");	
+			printf "let theta[%d,%d]:=%5.3f;\n", k, i, theta[k,i]>>("IG.INIVAL");
+			printf "let v[%d,%d]:=%5.3f;\n", k, i, v[k,i]>>("IG.INIVAL");
+			printf "let a[%d,%d]:=%5.3f;\n", k, i, a[k,i]>>("IG.INIVAL");
+			printf "let phy[%d,%d]:=%5.3f;\n", k, i, phy[k,i]>>("IG.INIVAL");		
+			printf "let w[%d,%d]:=%5.3f;\n", k, i, w[k,i]>>("IG.INIVAL");
+		}
+	}
+	close ("IG.INIVAL");
+}
